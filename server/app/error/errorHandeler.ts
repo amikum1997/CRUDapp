@@ -15,7 +15,7 @@ const returnError = (err : BaseError, req : IRequest, res : IResponse, next : Ne
 }
 
 function isOperationalError(error : Error) {
-    if (error instanceof BaseError) {
+    if (error instanceof BaseError) {   
         return error.isOperational
     }
     return false

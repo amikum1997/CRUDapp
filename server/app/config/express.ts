@@ -34,10 +34,10 @@ app.use(helmet());
 app.use(methodOverride());
 
 // mount api v1 routes
-app.use('/', router);
+app.use('/v1', router);
 
 // BASE ERROR HANDELING
-app.use(HandleError.returnError);
+app.use(HandleError.returnError as any);
 
 
 export default app;
