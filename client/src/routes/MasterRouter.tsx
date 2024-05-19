@@ -1,7 +1,6 @@
-import { Fragment } from 'react'
-import { Routes, Route } from 'react-router-dom'
+import { Fragment, useEffect, useLayoutEffect, useState } from 'react'
+import { Routes, Route, Navigate } from 'react-router-dom'
 import { PageRoutes } from './PageRoutes'
-import PrivateRoute from './PrivateRoute';
 
 interface pageRouteTypes {
     component: any;
@@ -10,27 +9,42 @@ interface pageRouteTypes {
 }
 
 const MasterRouter = () => {
+    const [isAuthenticated, setIsAuthenticated] = useState(false)
+
+    useLayoutEffect(() => {
+        const token = localStorage.getItem('token');
+        setIsAuthenticated(!!token); // Set isAuthenticated based on whether token exists
+    }, [])
+
     return (
         <Fragment>
             <Routes>
                 {
                     PageRoutes.map((routeItem: pageRouteTypes, index: number) => {
-                        if (routeItem.securedRoute) {
+                        if (routeItem.securedRoute && isAuthenticated) {
                             return (
-                                <Route element={<PrivateRoute />}>
-                                    <Route element={<routeItem.component />} path={routeItem.path}/>
-                                </Route>
+                                <Route key={routeItem.path} path={routeItem.path} element={<routeItem.component />} />
                             )
                         } else {
-                            return (
-                                <Route element={<routeItem.component />} path={routeItem.path} />
-                            )
+                            if (!isAuthenticated) {
+                                return (
+                                    <Route key={routeItem.path} path={routeItem.path} element={<routeItem.component />} />
+                                )
+                            } else {
+                                <Navigate to={"/dashboard"} />
+                            }
                         }
                     })
                 }
+                {/* Default route */}
+                <Route
+                    path="*"
+                    element={isAuthenticated ? <Navigate to="/dashboard" /> : <Navigate to="/" />}
+                />
             </Routes>
         </Fragment>
     )
 }
+
 
 export default MasterRouter

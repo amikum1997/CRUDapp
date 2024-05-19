@@ -90,6 +90,7 @@ const firstTimeUserSetup = async () => {
           amount FLOAT NOT NULL,
           description VARCHAR(255) NOT NULL,
           date TIMESTAMP NOT NULL,
+          type VARCHAR(50) NOT NULL,
           user_id INTEGER NOT NULL REFERENCES users(id) ON DELETE CASCADE,
           category_id INTEGER REFERENCES categories(id) ON DELETE SET NULL,
           created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
@@ -98,7 +99,6 @@ const firstTimeUserSetup = async () => {
       `);
     }
 
-    // Create trigger function and triggers if not exist
     await pool.query(`
       CREATE OR REPLACE FUNCTION update_timestamp()
       RETURNS TRIGGER AS $$

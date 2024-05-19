@@ -12,7 +12,6 @@ $background-color_5: #ffe0d2;
 $background-color_6: #aaa;
 $border-bottom-color_1: #151111;
 
-@import "https://fonts.googleapis.com/css2?family=Poppins:wght@200;300;400;500;600;700;800&display=swap";
 * {
 	padding: 0;
 	margin: 0;
@@ -72,7 +71,7 @@ main {
 	grid-template-rows: 1fr;
 	transition: 0.8s ease-in-out;
 }
-form {
+.form {
 	max-width: 260px;
 	width: 100%;
 	margin: 0 auto;
@@ -84,7 +83,7 @@ form {
 	grid-row: 1 / 2;
 	transition: opacity 0.02s 0.4s;
 }
-form.sign-up-form {
+.form.sign-up-form {
 	opacity: 0;
 	pointer-events: none;
 }
@@ -190,11 +189,11 @@ label {
 	}
 }
 main.sign-up-mode {
-	form.sign-in-form {
+	.form.sign-in-form {
 		opacity: 0;
 		pointer-events: none;
 	}
-	form.sign-up-form {
+	.form.sign-up-form {
 		opacity: 1;
 		pointer-events: all;
 	}
@@ -305,7 +304,7 @@ main.sign-up-mode {
 		width: 100%;
 		height: auto;
 	}
-	form {
+	.form {
 		max-width: revert;
 		padding: 1.5rem 2.5rem 2rem;
 		transition: transform 0.8s ease-in-out, opacity 0.45s linear;
@@ -360,7 +359,7 @@ main.sign-up-mode {
 			font-size: 1.2rem;
 		}
 	}
-	form {
+	.form {
 		padding: 1rem 2rem 1.5rem;
 	}
 }

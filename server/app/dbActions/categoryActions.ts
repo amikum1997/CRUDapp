@@ -9,7 +9,7 @@ export interface Category {
 
 const CategoryDBActions = {
     async createCategory(categoryName: string): Promise<Category> {
-        const result = await pool.query('INSERT INTO categories (categoryName) VALUES ($1) RETURNING *', [categoryName]);
+        const result = await pool.query('INSERT INTO categories (categoryname) VALUES ($1) RETURNING *', [categoryName]);
         return result.rows[0];
     },
 
