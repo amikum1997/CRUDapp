@@ -8,10 +8,6 @@ This is a full-stack application designed to handle user financial budget manage
 - [Technologies](#technologies)
 - [Prerequisites](#prerequisites)
 - [Installation](#installation)
-- [Running the Application](#running-the-application)
-- [Docker Setup](#docker-setup)
-- [API Endpoints](#api-endpoints)
-- [License](#license)
 
 ## Features
 
