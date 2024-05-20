@@ -1,0 +1,47 @@
+version: '3.8'
+
+services:
+  postgres:
+    image: postgres:13
+    container_name: postgres
+    environment:
+      DB_USERNAME: postgres
+      DB_PORT: 5432
+      DB_HOST: localhost
+      DB_NAME: CRUDapp
+      DB_PASSWORD: 199707
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    ports:
+      - "5432:5432"
+
+  server:
+    build:
+      context: ./server
+    container_name: server
+    environment:
+      PORT: 8000
+      NODE_ENV: development
+      JWT_SECRET: anyrandomstringwillworkhereyoumust@try
+      JWT_EXPIRATION: 24
+      DB_USERNAME: postgres
+      DB_PORT: 5432
+      DB_HOST: localhost
+      DB_NAME: CRUDapp
+      DB_PASSWORD: 199707
+    ports:
+      - "8000:8000"
+    depends_on:
+      - postgres
+
+  client:
+    build:
+      context: ./client
+    container_name: client
+    ports:
+      - "3000:3000"
+    depends_on:
+      - backend
+
+volumes:
+  postgres_data:
