@@ -17,8 +17,7 @@ This is a full-stack application designed to handle user financial budget manage
 
 - User authentication and authorization
 - Add, edit, and delete expenses
-- View expenses by category
-- Manage user profiles
+- View expenses
 - JWT-based authentication
 
 ## Technologies
@@ -39,5 +38,8 @@ This is a full-stack application designed to handle user financial budget manage
 ### Clone the Repository
 
 ```bash
-git clone https://github.com/your-username/financial-budget-management.git
-cd financial-budget-management
+git clone https://github.com/amikum1997/CRUDapp.git
+cd CRUDapp
+npm install
+npm run dev
+
