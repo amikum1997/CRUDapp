@@ -4,6 +4,7 @@ COPY package*.json ./
 RUN npm install
 COPY . .
 RUN npm run build
+EXPOSE 5173
 RUN npm install -g serve
-EXPOSE 3000
-CMD ["serve", "-s", "build"]
+RUN rm tsconfig.json || true
+CMD ["serve", "-s", "dist", "-p", "5173"]
