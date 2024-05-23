@@ -13,7 +13,11 @@ const MasterRouter = () => {
 
     useLayoutEffect(() => {
         const token = localStorage.getItem('token');
-        setIsAuthenticated(!!token); // Set isAuthenticated based on whether token exists
+        if(token === null){
+            setIsAuthenticated(false); 
+        }else{
+            setIsAuthenticated(true); 
+        }
     }, [])
 
     return (

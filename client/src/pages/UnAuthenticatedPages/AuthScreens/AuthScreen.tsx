@@ -87,21 +87,30 @@ const AuthScreen = () => {
                 userPassword: userPassword
             }
             await sendRequest('auth/login', 'POST', toSendData)
-
-            console.log(data);
-            
-
-            if(data.token){
-                localStorage.setItem('token' , data.token)
-                localStorage.setItem('user' , JSON.stringify(data))
-                window.location.replace('/dashboard')
-            }
         }
     }
 
-    const registerUserSubmitHandeler = () => {
+    useEffect(()=>{
+        if(data && data.token){
+            localStorage.setItem('token' , data.token)
+            localStorage.setItem('user' , JSON.stringify(data))
+            window.location.replace('/dashboard')
+        }
+    },[data])
+
+    const registerUserSubmitHandeler = async () => {
         if(userName && userEmail && userPassword){
+            if (!errorState.mailError || !errorState.passwordError) {
+                let toSendData = {
+                    userEmail: userEmail,
+                    userPassword: userPassword,
+                    userName : userName
+                }
+                await sendRequest('auth/register', 'POST', toSendData)
+                setAuthState(0)            
+
             
+            }
         }
     }
 
@@ -147,7 +156,7 @@ const AuthScreen = () => {
                             authState === 1 &&
                             <Fragment>
                                 <Fragment>
-                                    <form action="index.html" autoComplete="off" className="sign-up-form ">
+                                    <div className="form sign-up-form ">
                                         <div className="logo">
                                             <img src="./images/AuthScreen/logo.png" alt="easyclass" />
                                             <h4>Maoney Manager</h4>
@@ -177,7 +186,7 @@ const AuthScreen = () => {
                                                 <a href="#">Privacy Policy</a>
                                             </p>
                                         </div>
-                                    </form>
+                                    </div>
                                 </Fragment>
                             </Fragment>
                         }

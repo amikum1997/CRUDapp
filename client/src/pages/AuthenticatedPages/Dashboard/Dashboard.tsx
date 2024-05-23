@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react'
+import React, { useEffect, useLayoutEffect, useState } from 'react'
 import './dashboard.scss'
 import Calendar from 'react-calendar';
 import Select from 'react-select'
@@ -9,11 +9,21 @@ import useHttp from '../../../hooks/useHttp';
 
 const Dashboard = () => {
 
+
+  useLayoutEffect(() => {
+    const token = localStorage.getItem('token');
+    if(token === null){
+      window.location.replace('/')
+    }    
+}, [])
+
   const { loading: categoryFetch, error: categoryError, data: categoryData, sendRequest: categorysendRequest }: { loading: boolean, error: string, data: any, sendRequest: any } = useHttp();
   const { loading: expenseloading, error: expenseError, data: expenseData, sendRequest: expensesendRequest }: { loading: boolean, error: string, data: any, sendRequest: any } = useHttp();
   const { loading: addexpenseloading, error: addexpenseError, data: addexpenseData, sendRequest: addexpensesendRequest }: { loading: boolean, error: string, data: any, sendRequest: any } = useHttp();
   const { loading: dashboardLoading, error: dashboardError, data: dashboardData, sendRequest: dashboardsendRequest }: { loading: boolean, error: string, data: any, sendRequest: any } = useHttp();
 
+  const { loading: deleteLoading, error: deleteError, data: deleteData, sendRequest: deleteSendRequest }: { loading: boolean, error: string, data: any, sendRequest: any } = useHttp();
+  const { loading: updateLoading, error: updateError, data: updateData, sendRequest: updateSendRequest }: { loading: boolean, error: string, data: any, sendRequest: any } = useHttp();
 
 
   const [openNewTranz, setOpenNewTranz] = useState(false)
@@ -28,17 +38,36 @@ const Dashboard = () => {
   const [tnxDate, setTnxDate] = useState<string>()
   const [tnxDesc, setTnxDesc] = useState<string>()
   const [tnxAmount, setTnxAmount] = useState<number>()
+  const [edititemID, setEdititemID] = useState<number>()
 
+  const [isEditMode, setIsEditMode] = useState(false)
+
+
+  const resetEditMode = () => {
+      setIsEditMode(false)
+      setOpenNewTranz(false)
+      setTnxAmount(undefined)
+      setTnxType(undefined)
+      setTnxDate(undefined)
+      setTnxDesc(undefined)
+      setEdititemID(undefined)
+  }
   const DashboardFetchDetails = () => {
     let userDetail: any = localStorage.getItem('user')
     userDetail = JSON.parse(userDetail as any)
-    dashboardsendRequest(`expense/dashbaordDetail?userID=${userDetail?.id}`, 'GET')
-    expensesendRequest(`expense/allExpense?userID=${userDetail?.id}`, 'GET')
+    dashboardsendRequest(`expense/dashbaordDetail?userID=${userDetail?.id}`, 'GET' , null , {
+      Authorization : `Bearer ${localStorage.getItem('token')}`
+    })
+    expensesendRequest(`expense/allExpense?userID=${userDetail?.id}`, 'GET', null , {
+      Authorization : `Bearer ${localStorage.getItem('token')}`
+    })
   }
 
   useEffect(() => {
     DashboardFetchDetails()
-    categorysendRequest(`expense/allCategory`, 'GET')
+    categorysendRequest(`expense/allCategory`, 'GET', null , {
+      Authorization : `Bearer ${localStorage.getItem('token')}`
+    })
   }, [])
 
   useEffect(() => {
@@ -50,34 +79,80 @@ const Dashboard = () => {
     setCategorySelectArray(item)
   }, [categoryData])
 
-  useEffect(()=>{
-      setOpenNewTranz(false)
-      DashboardFetchDetails()
-  },[addexpenseData])
+  useEffect(() => {
+    setOpenNewTranz(false)
+    DashboardFetchDetails()
+  }, [addexpenseData])
 
-  const addNewTnx = async () => {
-    console.log(tnxCategory , tnxDate , tnxType , tnxDesc);
-    
+  const openModalInEditMode = (item: any) => {
+    let catData = categoryData.find((category: any) => category.id === item.category_id)
+    setIsEditMode(true)
+    setOpenNewTranz(true)
+    setTnxAmount(item.amount)
+    setTnxDesc(item.description)
+    setTnxDate(moment(item.date).format())
+    setTnxCategory(catData.categoryname)
+    setTnxType(item.type)
+    setEdititemID(item.id)
+  }
+
+
+  const deleteTnx = async (item: any) => {
+    await deleteSendRequest(`expense/deleteExpense`, 'DELETE', {
+      deleteItemID: item.id,
+      userID: item.user_id
+    })
+
+    DashboardFetchDetails()
+  }
+
+  const addEditNewTnx = async () => {
+    console.log(tnxCategory, tnxDate, tnxType, tnxDesc);
+
     if (tnxCategory && tnxDate && tnxType && tnxDesc) {
       let userDetail: any = localStorage.getItem('user')
       userDetail = JSON.parse(userDetail as any)
       console.log(userDetail);
-      
+
       if (userDetail.id) {
+        if (!isEditMode) {
 
-        let catData = categoryData.find((category:any) => category.categoryname === tnxCategory)
-        let toSend = {
-          amount: tnxAmount,
-          description: tnxDesc, 
-          date: moment.utc(tnxDate).format(), 
-          type: tnxType, 
-          user_id: userDetail.id,
-          category : catData.id
+          let catData = categoryData.find((category: any) => category.categoryname === tnxCategory)
+          let toSend = {
+            amount: tnxAmount,
+            description: tnxDesc,
+            date: moment(tnxDate).format(),
+            type: tnxType,
+            user_id: userDetail.id,
+            category: catData.id
+          }
+
+          console.log(toSend);
+          await addexpensesendRequest(`expense/addNewTnx`, 'POST', toSend , {
+            Authorization : `Bearer ${localStorage.getItem('token')}`
+          })
+        } else {
+
+          let catData = categoryData.find((category: any) => category.categoryname === tnxCategory)
+          let toSend = {
+            amount: tnxAmount,
+            description: tnxDesc,
+            date: moment(tnxDate).format(),
+            type: tnxType,
+            category: catData.id,
+            id : edititemID
+          }
+
+          console.log(toSend);
+
+          await updateSendRequest(`expense/editExpense`, 'PUT', toSend , {
+            Authorization : `Bearer ${localStorage.getItem('token')}`
+          })
+          resetEditMode()
+          DashboardFetchDetails()
+          
+
         }
-
-        console.log(toSend);
-
-        let data = await addexpensesendRequest(`expense/addNewTnx`, 'POST' , toSend)
       }
 
     }
@@ -93,15 +168,15 @@ const Dashboard = () => {
       <div className="higlightBlocks">
         <div className="blocks">
           <p className='blockTitle'>Current Balance</p>
-          <p className='blockAmount'>Rs {dashboardData && dashboardData.currentBalance ? dashboardData.currentBalance : 0}</p>
+          <p className='blockAmount'>Rs {dashboardData && dashboardData.currentBalance ? dashboardData.currentBalance.toLocaleString() : 0}</p>
         </div>
         <div className="blocks">
           <p className='blockTitle'>Total Income</p>
-          <p className='blockAmount'>Rs {dashboardData && dashboardData.totalIncome ? dashboardData.totalIncome : 0}</p>
+          <p className='blockAmount'>Rs {dashboardData && dashboardData.totalIncome ? dashboardData.totalIncome.toLocaleString() : 0}</p>
         </div>
         <div className="blocks">
           <p className='blockTitle'>Total Expense</p>
-          <p className='blockAmount'>Rs {dashboardData && dashboardData.totalExpense ? dashboardData.totalExpense : 0}</p>
+          <p className='blockAmount'>Rs {dashboardData && dashboardData.totalExpense ? dashboardData.totalExpense.toLocaleString() : 0}</p>
         </div>
       </div>
       <div className="addNewTransaction">
@@ -114,6 +189,7 @@ const Dashboard = () => {
           <li>Amount</li>
           <li>Description</li>
           <li>Tnx Date</li>
+          <li>Action</li>
         </ul>
         <div className="tableBody">
           {
@@ -122,9 +198,10 @@ const Dashboard = () => {
                 <ul className='tableData'>
                   <li><p>{expenseItem?.categoryname}</p></li>
                   <li><p>{expenseItem?.type}</p></li>
-                  <li><p>{expenseItem?.amount}</p></li>
+                  <li><p>{expenseItem?.amount.toLocaleString()}</p></li>
                   <li><p>{expenseItem?.description}</p></li>
                   <li><p>{moment(expenseItem?.date).format("DD-MM-YYYY")}</p></li>
+                  <li><button onClick={() => { openModalInEditMode(expenseItem) }}>Edit</button> <button onClick={() => { deleteTnx(expenseItem) }}>Delete</button></li>
                 </ul>
               )
             })
@@ -172,7 +249,7 @@ const Dashboard = () => {
                     <input type="number" value={tnxAmount} onChange={(event) => { setTnxAmount(event.target.valueAsNumber) }} />
                   </div>                </div>
                 <div className="formRow">
-                  <button className='formSubmit' onClick={addNewTnx}>Submit</button>
+                  <button className='formSubmit' onClick={addEditNewTnx}>Submit</button>
                 </div>
               </div>
             </div>

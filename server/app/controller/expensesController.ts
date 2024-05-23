@@ -37,9 +37,9 @@ const expensesController = {
         }
     },
     addNewTransaction: async (req: IRequest, res: IResponse, next: INext) => {
-        const { amount, description, date, type, user_id,category } = req.body
+        const { amount, description, date, type, user_id, category } = req.body
         try {
-            let addNewTrx = await ExpenseDBAction.createExpense(amount, description, date, type, user_id,category);
+            let addNewTrx = await ExpenseDBAction.createExpense(amount, description, date, type, user_id, category);
             if (!addNewTrx) {
                 throw new BaseError(GeneralError.SOMETHING_WENT_WRONG)
             }
@@ -49,12 +49,30 @@ const expensesController = {
             next(error)
         }
     },
+    editTransaction: async (req: IRequest, res: IResponse, next: INext) => {
+        const { amount, description, date, type, category , id } = req.body
+        try {
+            let addNewTrx = await ExpenseDBAction.EditExpenseByUserId(amount, description, date, type , category, id);
+            return res.status(200).send(addNewTrx)
+        } catch (error) {
+            next(error)
+        }
+    },
+    deleteTransaction: async (req: IRequest, res: IResponse, next: INext) => {
+        const { deleteItemID , userID } = req.body
+        try {
+            let deleteTnx = await ExpenseDBAction.DeleteExpenseByID(deleteItemID , userID);
+            return res.status(200).send(deleteTnx)
+        } catch (error) {
+            next(error)
+        }
+    },
     dashboardDetail: async (req: IRequest, res: IResponse, next: INext) => {
         const { userID } = req.query;
         try {
             let allTransactionData = await ExpenseDBAction.getExpensesByUserId(userID as any);
 
-            if(allTransactionData.length){
+            if (allTransactionData.length) {
                 let allCredits: number = allTransactionData.reduce((sum, transaction) => transaction.type === 'credit' ? sum + transaction.amount : sum, 0)
                 let allDebits: number = allTransactionData.reduce((sum, transaction) => transaction.type === 'debit' ? sum + transaction.amount : sum, 0)
                 let remainingCredits = allCredits - allDebits
@@ -63,10 +81,10 @@ const expensesController = {
                     totalIncome: allCredits,
                     totalExpense: allDebits
                 })
-            }else{
+            } else {
                 throw new BaseError(GeneralError.SOMETHING_WENT_WRONG)
             }
-         
+
         } catch (error) {
             next(error)
         }
